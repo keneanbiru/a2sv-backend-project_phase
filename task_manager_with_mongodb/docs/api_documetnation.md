@@ -12,7 +12,8 @@ The Task Manager API is a simple RESTful service implemented using Go and the Gi
 
 ### Using Postman
 
-You can find a detailed Postman collection documenting all the API endpoints, including request and response examples, [here](https://documenter.getpostman.com/view/37367045/2sA3rwKtYs)
+You can find a detailed Postman collection documenting all the API endpoints, including request and response examples, [here](https://documenter.getpostman.com/view/37367045/2sA3rxpYeB)
+
 
 1. **Set up Postman**: Open Postman and set the base URL for your requests (e.g., `http://localhost:8080`).
 2. **Create Requests**: Set up requests for each endpoint (GET, POST, PUT, DELETE) with the appropriate URL, method, headers, and body.
