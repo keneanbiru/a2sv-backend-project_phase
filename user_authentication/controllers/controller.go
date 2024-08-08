@@ -87,7 +87,7 @@ func (uc *UserController) Login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": tokenString})
 }
 
-// AddTask handles task creation
+// AddTask handles task creation allow admin to assign task to any user but users can only add tasks for theirselves.
 func (tc *TaskController) AddTask(c *gin.Context) {
 	var newTask models.Task
 	if err := c.ShouldBindJSON(&newTask); err != nil {
@@ -140,11 +140,11 @@ func (tc *TaskController) AddTask(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to retrieve inserted task ID"})
 		return
 	}
-	
+
 	c.JSON(http.StatusCreated, newTask)
 }
 
-// GetTasks retrieves tasks based on user ID and role
+// GetTasks retrieves tasks based on user ID and role admins can retrieve any users task
 func (tc *TaskController) GetTasks(c *gin.Context) {
 	userIDStr, exists := c.Get("ID")
 	if !exists {
@@ -172,6 +172,21 @@ func (tc *TaskController) GetTasks(c *gin.Context) {
 
 // UpdateTask handles task updates
 func (tc *TaskController) UpdateTask(c *gin.Context) {
+	userIDStr, exists := c.Get("ID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	role := c.GetString("Role")
+
+	// Convert userIDStr from string to primitive.ObjectID
+	userID, err := primitive.ObjectIDFromHex(userIDStr.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user ID"})
+		return
+	}
+
 	taskIDStr := c.Param("task_id")
 	taskID, err := primitive.ObjectIDFromHex(taskIDStr)
 	if err != nil {
@@ -182,6 +197,10 @@ func (tc *TaskController) UpdateTask(c *gin.Context) {
 	var updatedTask models.Task
 	if err := c.ShouldBindJSON(&updatedTask); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if role != "admin" && userID != updatedTask.OwnerID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can update others tasks"})
 		return
 	}
 
@@ -197,6 +216,21 @@ func (tc *TaskController) UpdateTask(c *gin.Context) {
 
 // DeleteTask handles task deletion
 func (tc *TaskController) DeleteTask(c *gin.Context) {
+	userIDStr, exists := c.Get("ID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
+		return
+	}
+
+	role := c.GetString("Role")
+
+	// Convert userIDStr from string to primitive.ObjectID
+	userID, err := primitive.ObjectIDFromHex(userIDStr.(string))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to parse user ID"})
+		return
+	}
+
 	taskIDStr := c.Param("task_id")
 	taskID, err := primitive.ObjectIDFromHex(taskIDStr)
 	if err != nil {
@@ -204,6 +238,8 @@ func (tc *TaskController) DeleteTask(c *gin.Context) {
 		return
 	}
 
+	if role != "admin" && userID != taskID {
+		c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can delete others tasks"})
 	result, err := tc.taskService.DeleteTask(taskID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -211,39 +247,5 @@ func (tc *TaskController) DeleteTask(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"deleted_count": result.DeletedCount})
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+} }
 
