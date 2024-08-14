@@ -3,35 +3,38 @@ package main
 import (
 	"task-manager/Delivery/controllers"
 	"task-manager/Delivery/routers"
+
 	//infrastructure "task-manager/Infrastructure"
 	repositories "task-manager/Repositories"
 	usecase "task-manager/Usecases"
+
 	//"time"
 	"log"
 
-    "go.mongodb.org/mongo-driver/mongo"
-    "go.mongodb.org/mongo-driver/mongo/options"
 	"context"
+
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 func main() {
 
 	//client := infrastructure.MongoDBInit() //mongodb initialization
-	mongoURI := "mongodb+srv://keneanbiru:Godislove33.@cluster0.fek5tj1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+	mongoURI := "mongodb+srv://<username>:<password>.@cluster0.fek5tj1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
-    clientOptions := options.Client().ApplyURI(mongoURI)
-    client, err := mongo.Connect(context.TODO(), clientOptions)
-    if err != nil {
-        log.Fatal(err)
-    }
+	clientOptions := options.Client().ApplyURI(mongoURI)
+	client, err := mongo.Connect(context.TODO(), clientOptions)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    err = client.Ping(context.TODO(), nil)
-    if err != nil {
-        log.Fatal(err)
-    }
+	err = client.Ping(context.TODO(), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    log.Println("Connected to MongoDB!")
+	log.Println("Connected to MongoDB!")
 	//initialization of the repositories
 	task_repo := repositories.NewTaskRepository(client)
 	user_repo := repositories.NewUserRepository(client)

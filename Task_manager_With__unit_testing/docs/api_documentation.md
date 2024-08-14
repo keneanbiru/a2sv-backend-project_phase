@@ -1,173 +1,209 @@
 
-## API Documentation
 
-### **1. User Management**
+## TaskController Documentation
 
-#### **Register a New User**
+### Overview
 
-- **Endpoint:** `POST /register`
-- **Description:** Registers a new user in the system.
-- **Request Body:**
-  ```json
-  {
-    "username": "string",
-    "password": "string",
-    "role": "string"  // Optional: can be "admin" or "user"
-  }
-  ```
-- **Response:**
-  - **Status Code:** `201 Created`
-  - **Body:**
-    ```json
-    {
-      "id": "object_id",
-      "username": "string",
-      "role": "string"
-    }
-    ```
-- **Roles:** No role required for registration if role specified its for admin.
-- **Notes:** Default role is "user" if not specified.
+The `TaskController` is responsible for handling HTTP requests related to task management and user operations in the Task Manager API. It ensures that tasks are managed correctly and that user-related operations are properly handled.
 
-#### **Login**
+### Endpoints
 
-- **Endpoint:** `POST /login`
-- **Description:** Authenticates a user and returns a JWT token.
-- **Request Body:**
-  ```json
-  {
-    "username": "string",
-    "password": "string"
-  }
-  ```
-- **Response:**
-  - **Status Code:** `200 OK`
-  - **Body:**
-    ```json
-    {
-      "token": "jwt_token"
-    }
-    ```
-- **Roles:** No role required for login.
-- **Notes:** The JWT token must be included in the Authorization header for protected routes.
+#### Task Operations
 
----
+1. **Get All Tasks**
 
-### **2. Authentication and Authorization Middleware**
+   - **Endpoint:** `GET /tasks`
+   - **Description:** Retrieves a list of all tasks for the authenticated user.
+   - **Response Status Code:** `200 OK`
+   - **Response Body Example:**
+     ```json
+     [
+       {
+         "id": "1",
+         "title": "Task 1",
+         "description": "Description of Task 1",
+         "due_date": "2024-08-15T00:00:00Z",
+         "status": "pending",
+         "owner_id": "user1"
+       },
+       {
+         "id": "2",
+         "title": "Task 2",
+         "description": "Description of Task 2",
+         "due_date": "2024-08-16T00:00:00Z",
+         "status": "completed",
+         "owner_id": "user1"
+       }
+     ]
+     ```
 
-- **Purpose:** Ensures that requests to protected routes are authenticated and authorized.
-- **Logic:**
-  - **Token Extraction:** Extracts the JWT token from the Authorization header.
-  - **Token Verification:** Validates the token using the secret key.
-  - **Context Population:** Adds the user's ID and role to the request context (`c.Set("ID", userID)` and `c.Set("Role", userRole)`), which can be accessed in subsequent handlers.
+2. **Get Task By ID**
 
----
+   - **Endpoint:** `GET /tasks/:id`
+   - **Description:** Retrieves a specific task by its ID for the authenticated user.
+   - **Response Status Code:** `200 OK`
+   - **Response Body Example:**
+     ```json
+     {
+       "id": "1",
+       "title": "Task 1",
+       "description": "Description of Task 1",
+       "due_date": "2024-08-15T00:00:00Z",
+       "status": "pending",
+       "owner_id": "user1"
+     }
+     ```
 
-### **3. Task Management**
+3. **Add Task**
 
-#### **Create a Task**
+   - **Endpoint:** `POST /tasks`
+   - **Description:** Creates a new task for the authenticated user.
+   - **Request Body Example:**
+     ```json
+     {
+       "title": "New Task",
+       "description": "Description of the new task",
+       "due_date": "2024-08-20T00:00:00Z",
+       "status": "pending"
+     }
+     ```
+   - **Response Status Code:** `201 Created`
+   - **Response Body Example:**
+     ```json
+     {
+       "id": "3",
+       "title": "New Task",
+       "description": "Description of the new task",
+       "due_date": "2024-08-20T00:00:00Z",
+       "status": "pending",
+       "owner_id": "user1"
+     }
+     ```
 
-- **Endpoint:** `POST /tasks`
-- **Description:** Creates a new task.
-- **Request Body:**
-  ```json
-  {
-    "title": "string",
-    "description": "string",
-    "due_date": "yyyy-mm-ddTHH:MM:SSZ",
-    "status": "string" // Optional
-  }
-  ```
-- **Response:**
-  - **Status Code:** `201 Created`
-  - **Body:**
-    ```json
-    {
-      "id": "object_id",
-      "title": "string",
-      "description": "string",
-      "due_date": "yyyy-mm-ddTHH:MM:SSZ",
-      "status": "string",
-      "owner_id": "object_id"
-    }
-    ```
-- **Roles:**
-  - **Admin:** Can assign tasks to any user by setting the `owner_id`.
-  - **Normal User:** Can only create tasks for themselves (the `owner_id` is set to the current user's ID).
-- **Notes:** Admins can set the `owner_id` to assign tasks to other users. Normal users cannot specify `owner_id` and thus can only create tasks for themselves.
+4. **Update Task**
 
-#### **Retrieve Tasks**
+   - **Endpoint:** `PUT /tasks/:id`
+   - **Description:** Updates an existing task by its ID for the authenticated user.
+   - **Request Body Example:**
+     ```json
+     {
+       "title": "Updated Task Title",
+       "description": "Updated description",
+       "due_date": "2024-08-22T00:00:00Z",
+       "status": "in-progress"
+     }
+     ```
+   - **Response Status Code:** `200 OK`
+   - **Response Body Example:**
+     ```json
+     {
+       "id": "1",
+       "title": "Updated Task Title",
+       "description": "Updated description",
+       "due_date": "2024-08-22T00:00:00Z",
+       "status": "in-progress",
+       "owner_id": "user1"
+     }
+     ```
 
-- **Endpoint:** `GET /tasks`
-- **Description:** Retrieves tasks based on the user’s role and ID.
-- **Response:**
-  - **Status Code:** `200 OK`
-  - **Body:**
-    ```json
-    [
-      {
-        "id": "object_id",
-        "title": "string",
-        "description": "string",
-        "due_date": "yyyy-mm-ddTHH:MM:SSZ",
-        "status": "string",
-        "owner_id": "object_id"
-      }
-    ]
-    ```
-- **Roles:**
-  - **Admin:** Can retrieve all tasks.
-  - **Normal User:** Can retrieve only their own tasks.
-- **Notes:** Admins can see all tasks while normal users only see their own tasks.
+5. **Delete Task**
 
-#### **Update a Task**
+   - **Endpoint:** `DELETE /tasks/:id`
+   - **Description:** Deletes a task by its ID for the authenticated user.
+   - **Response Status Code:** `200 OK`
 
-- **Endpoint:** `PUT /tasks/:task_id`
-- **Description:** Updates a specific task.
-- **Request Body:**
-  ```json
-  {
-    "title": "string",
-    "description": "string",
-    "due_date": "yyyy-mm-ddTHH:MM:SSZ",
-    "status": "string" // Optional
-  }
-  ```
-- **Response:**
-  - **Status Code:** `200 OK`
-  - **Body:**
-    ```json
-    {
-      "modified_count": "number"
-    }
-    ```
-- **Roles:**
-  - **Admin:** Can update any task.
-  - **Normal User:** Can only update tasks they own.
-- **Notes:** Admins have full access to update any task, while normal users can only update their own tasks.
+#### User Operations
 
-#### **Delete a Task**
+1. **Register User**
 
-- **Endpoint:** `DELETE /tasks/:task_id`
-- **Description:** Deletes a specific task.
-- **Response:**
-  - **Status Code:** `200 OK`
-  - **Body:**
-    ```json
-    {
-      "deleted_count": "number"
-    }
-    ```
-- **Roles:**
-  - **Admin:** Can delete any task.
-  - **Normal User:** Can only delete tasks they own.
-- **Notes:** Admins can delete any task, while normal users can only delete their own tasks.
+   - **Endpoint:** `POST /register`
+   - **Description:** Registers a new user.
+   - **Request Body Example:**
+     ```json
+     {
+       "email": "testuser@example.com",
+       "password": "password"
+     }
+     ```
+   - **Response Status Code:** `200 OK`
+   - **Response Body Example:**
+     ```json
+     {
+       "message": "User registered successfully"
+     }
+     ```
 
----
+2. **Login User**
 
-### **Security Considerations**
+   - **Endpoint:** `POST /login`
+   - **Description:** Authenticates a user and returns a token.
+   - **Request Body Example:**
+     ```json
+     {
+       "email": "testuser@example.com",
+       "password": "password"
+     }
+     ```
+   - **Response Status Code:** `200 OK`
+   - **Response Body Example:**
+     ```json
+     {
+       "token": "your_jwt_token_here"
+     }
+     ```
 
-- **Password Storage:** Ensure passwords are hashed before storing them in the database.
-- **Token Security:** Use strong secret keys and secure token handling practices to prevent unauthorized access.
-- **Role-Based Access Control:** Ensure that routes and operations are properly restricted based on user roles.
 
+
+### Test Cases
+
+#### Task Operations
+
+1. **TestTaskController_GetTasks**
+
+   - **Description:** Verifies that the `GetTasks` method returns all tasks for the authenticated user.
+   - **Expected Outcome:** Response status `200 OK` and a JSON array of tasks.
+
+2. **TestTaskController_GetTasksById**
+
+   - **Description:** Verifies that the `GetTasksById` method returns a specific task by ID for the authenticated user.
+   - **Expected Outcome:** Response status `200 OK` and a JSON object of the task.
+
+3. **TestTaskController_AddTask**
+
+   - **Description:** Verifies that the `AddTask` method creates a new task successfully for the authenticated user.
+   - **Expected Outcome:** Response status `201 Created` and a JSON object of the created task.
+
+4. **TestTaskController_UpdateTask**
+
+   - **Description:** Verifies that the `UpdateTask` method updates an existing task successfully for the authenticated user.
+   - **Expected Outcome:** Response status `200 OK` and a JSON object of the updated task.
+
+5. **TestTaskController_DeleteTask**
+
+   - **Description:** Verifies that the `DeleteTask` method deletes a task successfully for the authenticated user.
+   - **Expected Outcome:** Response status `200 OK`
+
+#### User Operations
+
+1. **TestUserController_Register**
+
+   - **Description:** Verifies that the `Register` method creates a new user successfully.
+   - **Expected Outcome:** Response status `200 OK` with a confirmation message.
+
+2. **TestUserController_Login**
+
+   - **Description:** Verifies that the `Login` method authenticates a user and returns a token.
+   - **Expected Outcome:** Response status `200 OK` with a JWT token.
+
+
+### User-Based Task Management
+
+The `TaskController` ensures that tasks and user operations are managed on a per-user basis:
+
+- Users can only view, update, or delete tasks they own.
+- Admins have additional permissions to manage users and view all tasks.
+
+### Conclusion
+
+This documentation outlines the functionalities of the `TaskController`, including task and user operations. It provides detailed descriptions of each endpoint, examples of requests and responses, and test cases to verify the correctness of the controller’s operations.
 
